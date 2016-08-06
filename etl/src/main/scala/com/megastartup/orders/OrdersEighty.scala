@@ -4,6 +4,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 
 object OrdersEighty {
@@ -25,7 +26,10 @@ object OrdersEighty {
     val sc         = new SparkContext(conf)
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
-    val ordersRawRDD = sc.textFile(fileName)
+    val rows = sc.textFile(fileName)
+      .zipWithIndex()
+      .filter(_._2 > 0)
+      .map(_._1)
 
     // specify schema
     val schema =
@@ -38,15 +42,21 @@ object OrdersEighty {
         StructField("payment_sum",       DoubleType,  false) ::
         Nil)
 
-    val ordersRDD = ordersRawRDD.map(_.split(","))
+    val orders = rows.map(_.split(","))
       .map(p => Row( p(0).trim,p(1).trim.toInt,p(2).trim,
                      p(3).trim,p(4).trim.toInt,p(5).trim.toDouble ))
 
-    val ordersDF = sqlc.createDataFrame(ordersRDD, schema)
-    orderDF.registerTempTable("order")
+    val ordersDF = sqlContext.createDataFrame(orders, schema)
 
-    val resultRDD = sqlContext.sql("SELECT COUNT(*) FROM order")
-    resultRDD.map(t => "Count - " + t(0)).collect().foreach(println)
+    ordersDF
+      .groupBy("branch")
+      .count()
+      .show()
+
+    //ordersDF.registerTempTable("order")
+
+    //val resultRDD = sqlContext.sql("SELECT COUNT(*) FROM order")
+    //resultRDD.map(t => "Count - " + t(0)).collect().foreach(println)
 
   }
 
