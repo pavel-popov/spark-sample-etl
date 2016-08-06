@@ -1,4 +1,4 @@
-# Test ELT for 1Factor
+# Test ETL process for OneFactor
 
 * [Original requirements][requirements.pdf]
 * Technologies:
@@ -8,25 +8,37 @@
   - [Simple test data generator][stdg]
 
 
-## Source data description
+## Introduction
 
+Currently our Megastartup company has two clients:
 
-### Clients
+- **Eighty** – Big federal chain selling office equipment
+- **Minodo Pizza** – Local pizzeria chain
 
-- Eighty - Big federal chain selling office equiment
-- Minodo Pizza - Local pizzeria chain
+## Test Data
 
-### Test Data
+Test data is generated using [Simple test data generator][stdg] utility using the following commands:
 
-Test data is generated using [Simple test data generator] utility using the following commands:
+- Eighty – 2,500,000 rows:
 
-- Eighty - 2,500,000 rows:
+      ./stdg -schema test_data/schema-eighty.json \
+         -rows 2500000 \
+         -columns branch,client_id,region,first_purchase,orders_count,payment_sum \
+         1> test_data/eighty.csv
 
-      ./stdg -schema schema-eighty.json -rows 2500000 -columns branch,client_id,region,first_purchase,orders_count,payment_sum 1> eighty.csv
+- Minodo Pizza – 100,000 rows:
 
-- Minodo Pizza - 100,000 rows:
+      ./stdg -schema schema-minodo_pizza.json \
+         -rows 100000 \
+         -columns email,filial_id,reg_timestamp,orders_last_month,payment_sum \
+         1> test_data/minodo.csv
 
-      ./stdg -schema schema-minodo_pizza.json -rows 1000 -columns email,filial_id,reg_timestamp,orders_last_month,payment_sum 1> minodo_pizza.csv
+## RAID (Restrictions, Assumptions, Issues, Defects)
+
+### Dates handling
+
+As per current requirements we need to provide cutomer age in days. Some clients also provide data without time part. Hence it's not useful to bother with time-zones and keep timestamps as Unix timestamps. We'll keep dates as strings in ISO-8601 format (YYYY-MM-DD).
+
 
 
 ## HDFS directory structure
@@ -44,6 +56,12 @@ Test data is generated using [Simple test data generator] utility using the foll
 
 - `/datamart/customer` - Data Mart with Customer data
 
+## Source code structure
+
+- `/etl` – ETL subsystem
+- `/ml` – Machine Learning subsystem
+- `/importer` – Importer subsystem downloading data from client' informational systems
+- `/publisher` – Publisher subsystem which publishes result data to clients
 
 [requirements.pdf]: https://raw.githubusercontent.com/schmooser/onefactor_etl/master/assets/requirements.pdf
 [stdg]: #
