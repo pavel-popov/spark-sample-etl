@@ -9,7 +9,7 @@ import org.apache.spark.sql.types._
 
 //import org.apache.hadoop.mapred.InvalidInputException
 
-import com.megastartup.lovs.Regions
+import com.megastartup.lov.Regions
 import com.megastartup.schemas.Schemas
 
 object OrdersEighty {
@@ -24,7 +24,7 @@ object OrdersEighty {
     val clientCode = "eighty"
     val fileName   = args(0).trim
     val dataDir    = args(1).trim
-    val period     = args(2).trim
+    val period     = args(2).trim // reporting period, YYYY-MM
 
     val appName = "Orders-Eighty"
     val conf    = new SparkConf()
@@ -63,7 +63,7 @@ object OrdersEighty {
     // cleaning up and normalizing data
     val sourceDF = sqlContext.sql("""
       SELECT CONCAT(branch,client_id) cust_id
-           , UNIX_TIMESTAMP(CONCAT(first_purchase, ' 03:00 UTC'), 'yyyy-dd-MM HH:mm z') reg_ts
+           , first_purchase reg_dt
            , region
            , orders_count orders_cnt
            , payment_sum payment_amt
@@ -76,7 +76,7 @@ object OrdersEighty {
       val customersRDD = sc.textFile(s"$dataDir/dim/customer/$clientCode/*")
         .map(_.split(","))
         .map(p => Row( p(0).trim,
-                       p(1).trim.toLong,
+                       p(1).trim,
                        p(2).trim.toInt ))
 
       // creating DataFrame
@@ -90,7 +90,7 @@ object OrdersEighty {
     // picking up new customers and saving them
     val newCustomersDF = sqlContext.sql("""
       SELECT s.cust_id
-           , s.reg_ts
+           , s.reg_dt
            , s.region
         FROM source s
         LEFT JOIN customers c ON c.cust_id = s.cust_id
@@ -116,15 +116,15 @@ object OrdersEighty {
 
     // creating output data
     //val allCustomersDF = readCustomers()
-    val outputDF = sqlContext.sql("""
+    val outputDF = sqlContext.sql(s"""
         SELECT c.cust_id
              , o.orders_cnt
              , o.payment_amt
-             , trunc((current_timestamp() - c.reg_ts) / 60 / 60 / 24) days_old
+             , datediff('$period-01', c.reg_dt) days_old
              , c.region
-          FROM (SELECT cust_id, reg_ts, region FROM customers
+          FROM (SELECT cust_id, reg_dt, region FROM customers
                 UNION ALL
-                SELECT cust_id, reg_ts, region FROM new_customers) c
+                SELECT cust_id, reg_dt, region FROM new_customers) c
           LEFT JOIN orders o ON c.cust_id = o.cust_id
     """)
 

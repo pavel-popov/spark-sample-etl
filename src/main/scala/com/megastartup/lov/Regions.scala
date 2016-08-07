@@ -1,4 +1,4 @@
-package com.megastartup.lovs
+package com.megastartup.lov
 
 object Regions {
   val regions = List (

@@ -59,5 +59,5 @@ cleanup "$CLIENT_CODE"
 $SPARK_HOME/bin/spark-submit \
   --class $CLASS \
   --master local \
-  etl/target/orders-$VERSION.jar \
+  target/orders-$VERSION.jar \
   $SOURCE_FILE $DATA_DIR $PERIOD 2>&1 | tee -a run.log

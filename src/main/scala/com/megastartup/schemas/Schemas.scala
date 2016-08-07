@@ -7,7 +7,7 @@ object Schemas {
   val CustomerSchema =
     StructType(
       StructField("cust_id", StringType,  false) ::
-      StructField("reg_ts",  LongType,    false) ::
+      StructField("reg_dt",  StringType,  false) ::
       StructField("region",  IntegerType, false) ::
       Nil)
 
