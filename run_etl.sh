@@ -16,24 +16,48 @@ error() {
 }
 
 if [ "$#" -ne 3 ]; then
-  echo "Usage: run_etl.sh <source_file> <client_id> <period>"
+  echo "Usage: run_etl.sh <source_file> <client_code> <period>"
   error "Invalid number of arguments"
 fi
 
 SOURCE_FILE=$1
-CLIENT_ID=$2
+CLIENT_CODE=$2
 PERIOD=$3
 VERSION="0.0.1-SNAPSHOT"
-CLASS=org.megastartup.orders.OrdersEighty
+DATA_DIR=$(pwd)/data
+
+CLASS=com.megastartup.orders.OrdersEighty
 SPARK_HOME=/opt/spark-1.6.1-bin-hadoop2.6
 
-
 info "Spark Home: $SPARK_HOME"
-info "Parameters: SOURCE_FILE=$SOURCE_FILE CLIENT_ID=$CLIENT_ID PERIOD=$PERIOD"
+info "Parameters: SOURCE_FILE=$SOURCE_FILE CLIENT_CODE=$CLIENT_CODE PERIOD=$PERIOD"
 
+info "Creating directories structure"
+
+create_dirs() {
+  mkdir -p "$DATA_DIR/dim/customer/$1"
+  touch "$DATA_DIR/dim/customer/$1/dummy.txt"
+}
+
+create_dirs "$CLIENT_CODE"
+
+info "Cleaning up existing data"
+
+cleanup() {
+  info "Removing dimension increments"
+  rm -rf "$DATA_DIR/dim/customer/$1/$PERIOD"
+
+  info "Removing facts increments"
+  rm -rf "$DATA_DIR/fact/orders/$1/$PERIOD"
+
+  info "Removing DataMart data"
+  rm -rf "$DATA_DIR/dm/orders/$1/$PERIOD"
+}
+
+cleanup "$CLIENT_CODE"
 
 $SPARK_HOME/bin/spark-submit \
   --class $CLASS \
   --master local \
   etl/target/orders-$VERSION.jar \
-  $SOURCE_FILE 2>&1 | tee -a run.log
+  $SOURCE_FILE $DATA_DIR $PERIOD 2>&1 | tee -a run.log
