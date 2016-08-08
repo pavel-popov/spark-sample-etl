@@ -128,7 +128,7 @@
   },
   "first_purchase": {
         "type": "date",
-        "date_format": "2006-02-01",
+        "date_format": "2006-01-02",
         "date_low_boundary": "2010-01-01T00:00:00+00:00"
   },
     "orders_count": {
