@@ -17,7 +17,7 @@ object Staging {
 
   def fromEighty (src: RDD[String]): RDD[Staging] = {
     src.map(_.split(","))
-      .map(p => Staging( p(0).trim+p(1).trim,          // branch+client_id
+      .map(p => Staging( p(0).trim+p(1).trim,           // branch+client_id
                           Regions.ByName(p(2).trim),    // lookup region id by name
                           p(3).trim,                    // TODO: add date parsing
                           p(4).trim.toInt,
@@ -38,7 +38,7 @@ object Staging {
     src.map(_.split(","))
       .map(p => Staging( p(0).trim,                    // email
                          regionIndex(p(1).trim),       // lookup region id by index
-                         p(2).trim,                    // TODO: add convertioni from timestamp to date
+                         p(2).trim,                    // TODO: add convertion from timestamp to date
                          p(3).trim.toInt,
                          toOptionDouble(p(4)) ))
   }
