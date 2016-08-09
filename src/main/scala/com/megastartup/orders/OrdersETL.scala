@@ -121,8 +121,10 @@ object OrderFact {
     src.map(f => OrderFact(f.CustID, f.OrdersCnt, f.PaymentSum))
   }
 
+  // somehow I can't make _.mkString thus we implement this custom method,
+  // TODO: get rid of this
   def mkString(o: OrderFact, sep: String): String = {
-    s"%s$sep%d$sep%f".format(o.CustID, o.OrdersCnt, o.PaymentSum)
+    s"%s$sep%d$sep%f".format(o.CustID, o.OrdersCnt, o.PaymentSum.getOrElse(0))
   }
 }
 
@@ -143,11 +145,11 @@ class OrderDM(sqlc: SQLContext) {
   // SQLContext - customer (dim) and orders (fact - for current period only)
   def orders(period: String): RDD[String] =
     sqlc
-      .sql("""
+      .sql(s"""
       |SELECT c.CustID
       |     , COALESCE(o.OrdersCnt, 0) OrdersCnt
-      |     , COALESCE(o.PaymentAmt, 0) PaymentAmt
-      |     , datediff(s"$period-01", c.RegistrationDate) DaysOld
+      |     , COALESCE(o.PaymentSum, 0) PaymentSum
+      |     , datediff('$period-01', c.RegistrationDate) DaysOld
       |     , c.Region
       |  FROM customer c
       |  LEFT JOIN orders o ON c.CustID = o.CustID
@@ -219,6 +221,6 @@ object OrdersETL {
     ordersDF.show()
 
     val dm = new OrderDM(sqlContext).orders(period)
-    dm.saveAsTextFile(s"$dataDir/fact/orders/$clientCode/$period")
+    dm.saveAsTextFile(s"$dataDir/dm/orders/$clientCode/$period")
   }
 }
