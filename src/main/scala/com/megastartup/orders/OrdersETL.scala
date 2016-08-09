@@ -58,6 +58,38 @@ case class CustomerDim(
   Region: Int
 )
 
+
+class CustomerDimMerger(sqlc: SQLContext) {
+
+  // merge takes existing customers and customers from current loading and
+  // returns new RDD with all customers and delta that was added
+  def merge (existing: RDD[CustomerDim], current: RDD[CustomerDim]): (RDD[CustomerDim], RDD[CustomerDim]) = {
+
+    val toRow = (c: CustomerDim) => Row(c.CustID, c.RegistrationDate, c.Region)
+
+    val existingDF = sqlc.createDataFrame(existing.map(toRow), Customer.schema)
+    existingDF.registerTempTable("existing")
+
+    val currentDF = sqlc.createDataFrame(current.map(toRow), Customer.schema)
+    currentDF.registerTempTable("current")
+
+    val sql = """
+     |SELECT o.CustID
+     |     , o.RegistrationDate
+     |     , o.Region
+     |  FROM current o
+     |  LEFT JOIN existing c ON c.CustID = o.CustID
+     | WHERE c.CustID IS NULL
+     |""".stripMargin
+
+    val delta = sqlc.sql(sql).map(row => CustomerDim(
+      row(0).toString, row(1).toString, row(2).toString.toInt))
+
+    (existing.union(delta), delta)
+  }
+
+}
+
 object CustomerDim {
 
   def fromStg (src: RDD[OrderStg]): RDD[CustomerDim] = {
@@ -69,16 +101,6 @@ object CustomerDim {
       .map(r => CustomerDim( r(0).trim,
                              r(1).trim,
                              r(2).trim.toInt ))
-  }
-
-  def merge (existing: RDD[CustomerDim], current: RDD[CustomerDim]): (RDD[CustomerDim], RDD[CustomerDim]) = {
-    val existingKV = existing.map(x => (x.CustID, x)).groupByKey()
-    val currentKV = current.map(x => (x.CustID, x)).groupByKey()
-
-    val deltaKV = currentKV.subtractByKey(existingKV)
-    val fullKV = existingKV.union(deltaKV)
-
-    (deltaKV.map(_._2), fullKV.map(_._2))
   }
 
   def mkString(c: CustomerDim, sep: String): String = {
@@ -165,16 +187,22 @@ object OrdersETL {
       case "minodo" => OrderStg.fromMinodo(raw)
     }
 
-    val existingCustomers = CustomerDim.fromText(sc.textFile(s"$dataDir/dim/customer/$clientCode/*"))
+    val existingCustomers = CustomerDim.fromText(
+      sc.textFile(s"$dataDir/dim/customer/$clientCode/*"))
 
     val currentCustomers = CustomerDim.fromStg(stg)
 
-    val (delta, customers) = CustomerDim.merge(existingCustomers, currentCustomers)
+    val merger = new CustomerDimMerger(sqlContext)
+
+    val (customers, delta) = merger.merge(existingCustomers, currentCustomers)
 
     // saving delta
-    delta.map(CustomerDim.mkString(_, ",")).saveAsTextFile(s"$dataDir/dim/customer/$clientCode/$period")
+    delta.map(CustomerDim.mkString(_, ",")).saveAsTextFile(
+      s"$dataDir/dim/customer/$clientCode/$period")
 
-    val customersDF = sqlContext.createDataFrame(customers, Customer.customer)
+    val customerToRow = (c: CustomerDim) => Row(c.CustID, c.RegistrationDate, c.Region)
+
+    val customersDF = sqlContext.createDataFrame(customers.map(customerToRow), Customer.schema)
     customersDF.registerTempTable("customer")
 
     customersDF.show()
@@ -184,7 +212,8 @@ object OrdersETL {
     // saving orders for current period
     orders.map(OrderFact.mkString(_, ",")).saveAsTextFile(s"$dataDir/fact/orders/$clientCode/$period")
 
-    val ordersDF = sqlContext.createDataFrame(orders, Orders.orders)
+    val ordersToRow = (o: OrderFact) => Row(o.CustID, o.OrdersCnt, o.PaymentSum)
+    val ordersDF = sqlContext.createDataFrame(orders.map(ordersToRow), Orders.schema)
     ordersDF.registerTempTable("orders")
 
     ordersDF.show()

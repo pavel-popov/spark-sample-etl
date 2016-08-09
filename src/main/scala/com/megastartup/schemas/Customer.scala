@@ -3,7 +3,7 @@ package com.megastartup.schemas
 import org.apache.spark.sql.types._
 
 object Customer {
-  val customer =
+  val schema =
     StructType(
       StructField("CustID",           StringType,  false) ::
       StructField("RegistrationDate", StringType,  true) ::
