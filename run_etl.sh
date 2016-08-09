@@ -26,7 +26,7 @@ PERIOD=$3
 VERSION="0.0.1-SNAPSHOT"
 DATA_DIR=$(pwd)/data
 
-CLASS=com.megastartup.orders.OrdersEighty
+CLASS=com.megastartup.orders.OrdersETL
 SPARK_HOME=/opt/spark-1.6.1-bin-hadoop2.6
 
 info "Spark Home: $SPARK_HOME"
@@ -60,4 +60,4 @@ $SPARK_HOME/bin/spark-submit \
   --class $CLASS \
   --master local \
   target/orders-$VERSION.jar \
-  $SOURCE_FILE $DATA_DIR $PERIOD 2>&1 | tee -a run.log
+  $CLIENT_CODE $SOURCE_FILE $DATA_DIR $PERIOD 2>&1 | tee -a run.log
