@@ -26,7 +26,7 @@ PERIOD=$3
 VERSION="0.0.1-SNAPSHOT"
 DATA_DIR=$(pwd)/data
 
-CLASS=com.megastartup.orders.OrdersETL
+CLASS=com.megastartup.orders.Main
 SPARK_HOME=/opt/spark-1.6.1-bin-hadoop2.6
 
 info "Spark Home: $SPARK_HOME"
