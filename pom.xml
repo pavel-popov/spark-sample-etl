@@ -60,6 +60,22 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -79,23 +95,11 @@
       <artifactId>spark-sql_2.10</artifactId>
       <version>1.6.1</version>
     </dependency>
-    <!-- nscala-time -->
+    <!-- datetime operations -->
     <dependency>
       <groupId>com.github.nscala-time</groupId>
       <artifactId>nscala-time_2.10</artifactId>
       <version>2.12.0</version>
-    </dependency>
-    <!-- scalatest -->
-    <dependency>
-      <groupId>org.scalactic</groupId>
-      <artifactId>scalactic_2.11</artifactId>
-      <version>3.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.11</artifactId>
-      <version>3.0.0</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
