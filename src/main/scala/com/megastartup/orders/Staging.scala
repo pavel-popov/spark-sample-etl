@@ -4,6 +4,7 @@ import org.apache.spark.rdd.RDD
 
 import com.megastartup.lov.Regions
 import com.megastartup.aux.Options.toOptionDouble
+import com.megastartup.aux.ToDate
 
 case class Staging(
   CustID: String,
@@ -19,7 +20,7 @@ object Staging {
     src.map(_.split(","))
       .map(p => Staging( p(0).trim+p(1).trim,           // branch+client_id
                           Regions.ByName(p(2).trim),    // lookup region id by name
-                          p(3).trim,                    // TODO: add date parsing
+                          p(3).trim,                    // TODO: add check for valid date
                           p(4).trim.toInt,
                           toOptionDouble(p(5)) ))
   }
@@ -36,9 +37,9 @@ object Staging {
     }
 
     src.map(_.split(","))
-      .map(p => Staging( p(0).trim,                    // email
-                         regionIndex(p(1).trim),       // lookup region id by index
-                         p(2).trim,                    // TODO: add convertion from timestamp to date
+      .map(p => Staging( p(0).trim,                              // email
+                         regionIndex(p(1).trim),                 // lookup region id by index
+                         ToDate.fromTimestamp(p(2).trim.toLong), // converting timestamp to date YYYY-MM-DD (Moscow timezone)
                          p(3).trim.toInt,
                          toOptionDouble(p(4)) ))
   }

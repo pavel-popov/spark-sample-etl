@@ -23,7 +23,7 @@ fi
 SOURCE_FILE=$1
 CLIENT_CODE=$2
 PERIOD=$3
-VERSION="0.0.1-SNAPSHOT"
+VERSION="0.0.1-SNAPSHOT-jar-with-dependencies"
 DATA_DIR=$(pwd)/data
 
 CLASS=com.megastartup.orders.Main
