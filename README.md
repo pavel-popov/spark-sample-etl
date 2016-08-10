@@ -143,7 +143,7 @@
 
 ## Тестовые данные
 
-Тестовые данные подготовлены с помощью приложения [Simple Test Data Generator](https://github.com/pavel-popov/stdg), схемы для тестовых данных сохранены в директории `test\_data`.
+Тестовые данные подготовлены с помощью приложения [Simple Test Data Generator](https://github.com/pavel-popov/stdg), схемы для тестовых данных сохранены в директории `test_data`.
 
 Команды для подготовки тестовых данных:
 
@@ -157,7 +157,7 @@
         stdg -columns email,filial_id,reg_timestamp,orders_last_month,payment_sum \
              -schema schema-minodo.json -rows 10000 > minodo.csv
 
-Тестовые данные доступны в файлах `test\_data/eighty.csv` и `test\_data/minodo.csv`.
+Тестовые данные доступны в файлах `test_data/eighty.csv` и `test_data/minodo.csv`.
 
 
 ## Сборка проекта
