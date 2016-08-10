@@ -143,4 +143,45 @@
    Orders (3) по ключу CustID и полученные данные сохраняются в DataMart область
 
 
+## Тестовые данные
+
+Тестовые данные подготовлены с помощью приложения [Simple Test Data Generator](https://github.com/pavel-popov/stdg), схемы для тестовых данных сохранены в директории `test\_data`.
+
+Команды для подготовки тестовых данных:
+
+* Eighty:
+
+        stdg -columns branch,client_id,region,first_purchase,orders_count,payment_sum \
+             -schema schema-eighty.json -rows 25000 > eighty.csv
+
+* Minodo:
+
+        stdg -columns email,filial_id,reg_timestamp,orders_last_month,payment_sum \
+             -schema schema-minodo.json -rows 10000 > minodo.csv
+
+Тестовые данные доступны в файлах `test\_data/eighty.csv` и `test\_data/minodo.csv`.
+
+
+## Сборка проекта
+
+Для сборки используется Maven:
+
+    mvn clean && mvn package
+
+## Запуск ETL-процессов
+
+Для запуска приложен скрипт `run_etl.sh`, который надо запустить с параметрами:
+* `source\_data` - путь к файлу с данными
+* `client\_code` - код клиента, eighty или minodo
+* `period` - отчетный период, в формате YYYY-MM
+
+Пример запуска для Eighty:
+
+    ./run_etl.sh test_data/eighty.csv eighty 2016-06
+
+Пример запуска для Minodo:
+
+    ./run_etl.sh test_data/minodo.csv minodo 2016-06
+
+
 [requirements.pdf]: https://raw.githubusercontent.com/pavel-popov/onefactor_etl/master/assets/requirements.pdf
