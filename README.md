@@ -1,7 +1,5 @@
 # Тестовое задание для OneFactor
 
-[Требования][requirements.pdf]
-
 Допустим, стартап называется Megastartup, а два его текущих клиента:
 
 - Eighty - крупная федеральная сеть по продаже офисной техники
@@ -171,8 +169,8 @@
 ## Запуск ETL-процессов
 
 Для запуска приложен скрипт `run_etl.sh`, который надо запустить с параметрами:
-* `source\_data` - путь к файлу с данными
-* `client\_code` - код клиента, eighty или minodo
+* `source_data` - путь к файлу с данными
+* `client_code` - код клиента, eighty или minodo
 * `period` - отчетный период, в формате YYYY-MM
 
 Пример запуска для Eighty:
@@ -182,6 +180,3 @@
 Пример запуска для Minodo:
 
     ./run_etl.sh test_data/minodo.csv minodo 2016-06
-
-
-[requirements.pdf]: https://raw.githubusercontent.com/pavel-popov/onefactor_etl/master/assets/requirements.pdf
