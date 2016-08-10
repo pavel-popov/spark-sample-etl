@@ -173,6 +173,10 @@
 * `client_code` - код клиента, eighty или minodo
 * `period` - отчетный период, в формате YYYY-MM
 
+**Важно!** В `run_etl.sh` прописан путь к директории в переменной, в которой установлен Spark, перед запуском замените на актуальный путь:
+
+    SPARK_HOME=/opt/spark-1.6.1-bin-hadoop2.6
+
 Пример запуска для Eighty:
 
     ./run_etl.sh test_data/eighty.csv eighty 2016-06
