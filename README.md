@@ -184,3 +184,7 @@
 Пример запуска для Minodo:
 
     ./run_etl.sh test_data/minodo.csv minodo 2016-06
+
+## Автоматизированное тестирование
+
+To be defined
