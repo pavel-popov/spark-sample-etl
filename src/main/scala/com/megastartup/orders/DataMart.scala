@@ -1,29 +1,21 @@
 package com.megastartup.orders
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{Row, SQLContext}
 
-case class DataMart(
-  CustID: String,
-  OrdersCnt: Int,
-  PaymentSum: Double,
-  DaysOld: Int,
-  Region: Int
-)
+class DataMart(sqlc: SQLContext, period: String) {
 
-object DataMart(sqlc: SQLContext, period: String) {
-
-  def generate(customers: RDD[Customer], orders: RDD[Orders]): RDD[DataMart] {
+  def generate(customers: RDD[Customer], orders: RDD[Orders]): RDD[Row] = {
 
     val customersDF = sqlc.createDataFrame(customers.map(_.toRow), Customer.schema)
     customersDF.registerTempTable("customer")
     customersDF.show()
 
-    val ordersDF = sqlContext.createDataFrame(orders.map(_.toRow), Orders.schema)
+    val ordersDF = sqlc.createDataFrame(orders.map(_.toRow), Orders.schema)
     ordersDF.registerTempTable("orders")
     ordersDF.show()
 
-    val output = sqlContext.sql(s"""
+    val output = sqlc.sql(s"""
       |SELECT c.CustID
       |     , COALESCE(o.OrdersCnt, 0) OrdersCnt
       |     , COALESCE(o.PaymentSum, 0) PaymentSum

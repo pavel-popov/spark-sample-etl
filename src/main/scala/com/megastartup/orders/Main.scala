@@ -46,7 +46,7 @@ object Main {
     orders.map(_.mkString(",")).saveAsTextFile(s"$dataDir/fact/orders/$clientCode/$period")
 
     // generating resulting DataMart and saving it
-    val dm = DataMart(sqlContext, period).generate(customers, orders)
+    val dm = new DataMart(sqlContext, period).generate(customers, orders)
     dm.map(_.mkString(",")).saveAsTextFile(s"$dataDir/dm/orders/$clientCode/$period")
   }
 }
