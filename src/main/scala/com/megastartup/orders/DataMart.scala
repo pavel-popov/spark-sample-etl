@@ -3,7 +3,15 @@ package com.megastartup.orders
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 
-class DataMart(sqlc: SQLContext, period: String) {
+case class DataMart(
+  CustID: String,
+  OrdersCnt: Int,
+  PaymentSum: Double,
+  DaysOld: Int,
+  Region: Int
+)
+
+object DataMart(sqlc: SQLContext, period: String) {
 
   def generate(customers: RDD[Customer], orders: RDD[Orders]): RDD[DataMart] {
 
