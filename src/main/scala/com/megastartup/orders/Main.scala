@@ -26,7 +26,6 @@ object Main {
     val sc         = new SparkContext(conf)
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
-
     val raw = sc.textFile(fileName)
       .zipWithIndex().filter(_._2 > 0).map(_._1) // removing header row from data
 
@@ -36,41 +35,18 @@ object Main {
     }
 
     val existingCustomers = Customer.fromStorage(sc.textFile(s"$dataDir/dim/customer/$clientCode/*"))
+    val currentCustomers  = Customer.fromStaging(stg)
 
-    val currentCustomers = Customer.fromStaging(stg)
-
+    // loading and saving customers delta
     val (customers, delta) = new CustomerMerger(sqlContext).merge(existingCustomers, currentCustomers)
-
-    // saving customers delta for current periods for future reuse
     delta.map(_.mkString(",")).saveAsTextFile(s"$dataDir/dim/customer/$clientCode/$period")
 
-    val customersDF = sqlContext.createDataFrame(customers.map(_.toRow), Customer.schema)
-    customersDF.registerTempTable("customer")
-
-    customersDF.show()
-
+    // loading and saving orders
     val orders = Orders.fromStaging(stg)
-
-    // saving orders for current period
     orders.map(_.mkString(",")).saveAsTextFile(s"$dataDir/fact/orders/$clientCode/$period")
 
-    val ordersDF = sqlContext.createDataFrame(orders.map(_.toRow), Orders.schema)
-    ordersDF.registerTempTable("orders")
-
-    ordersDF.show()
-
-    val output = sqlContext.sql(s"""
-      |SELECT c.CustID
-      |     , COALESCE(o.OrdersCnt, 0) OrdersCnt
-      |     , COALESCE(o.PaymentSum, 0) PaymentSum
-      |     , datediff('$period-01', c.RegistrationDate) DaysOld
-      |     , c.Region
-      |  FROM customer c
-      |  LEFT JOIN orders o ON c.CustID = o.CustID
-      |""".stripMargin)
-
-    output.show()
-
-    output.rdd.map(_.mkString(",")).saveAsTextFile(s"$dataDir/dm/orders/$clientCode/$period")
+    // generating resulting DataMart and saving it
+    val dm = new DataMart(sqlContext, period).generate(customers, orders)
+    dm.map(_.mkString(",")).saveAsTextFile(s"$dataDir/dm/orders/$clientCode/$period")
   }
 }
