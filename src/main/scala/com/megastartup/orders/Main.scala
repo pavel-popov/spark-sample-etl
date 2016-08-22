@@ -29,10 +29,24 @@ object Main {
     val raw = sc.textFile(fileName)
       .zipWithIndex().filter(_._2 > 0).map(_._1) // removing header row from data
 
+    // quality gate
+    val (goodData, badData) = QualityGate.checkItemQuality(raw, clientCode match {
+      case "eighty" => QualityGate.eightyItemPass
+      case "minodo" => QualityGate.minodoItemPass
+    })
+
+    // saving bad data
+    badData.saveAsTextFile(s"$dataDir/bad_data/orders/$clientCode/$period")
+
+    // staging
     val stg = clientCode match {
-      case "eighty" => Staging.fromEighty(raw)
-      case "minodo" => Staging.fromMinodo(raw)
+      case "eighty" => Staging.fromEighty(goodData)
+      case "minodo" => Staging.fromMinodo(goodData)
     }
+    // TODO: refactor code to place all Eighty- and Minodo-specific code to separate Objects
+
+    // stats on staging data
+    // TODO: implement
 
     val existingCustomers = Customer.fromStorage(sc.textFile(s"$dataDir/dim/customer/$clientCode/*"))
     val currentCustomers  = Customer.fromStaging(stg)

@@ -19,10 +19,10 @@ object Staging {
   def fromEighty (src: RDD[String]): RDD[Staging] = {
     src.map(_.split(","))
       .map(p => Staging( p(0).trim+p(1).trim,           // branch+client_id
-                         Regions.ByName(p(2).trim),    // lookup region id by name
-                         p(3).trim,                    // TODO: add check for valid date
-                         p(4).trim.toInt,
-                         toOptionDouble(p(5)) ))
+                          Regions.ByName(p(2).trim),    // lookup region id by name
+                          p(3).trim,
+                          p(4).trim.toInt,
+                          toOptionDouble(p(5)) ))
   }
 
   def fromMinodo (src: RDD[String]): RDD[Staging] = {
