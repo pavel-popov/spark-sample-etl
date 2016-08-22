@@ -9,4 +9,13 @@ object ToDate {
   def fromTimestamp(ts: Long): String = {
     fmt.withZone(DateTimeZone.forID("Europe/Moscow")).print(ts*1000L)
   }
+
+  def fromString(s: String): Option[String] = {
+    try {
+      val t = fmt.parseDateTime(s)
+      Some(fmt.print(t))
+    } catch {
+      case _: Throwable => None
+    }
+  }
 }

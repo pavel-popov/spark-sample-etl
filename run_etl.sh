@@ -44,14 +44,17 @@ create_dirs "$CLIENT_CODE"
 info "Cleaning up existing data"
 
 cleanup() {
-  info "Removing dimension increments"
+  info "Removing Dimension increments"
   rm -rf "$DATA_DIR/dim/customer/$1/$PERIOD"
 
-  info "Removing facts increments"
+  info "Removing Facts increments"
   rm -rf "$DATA_DIR/fact/orders/$1/$PERIOD"
 
   info "Removing DataMart data"
   rm -rf "$DATA_DIR/dm/orders/$1/$PERIOD"
+
+  info "Removing BadData data"
+  rm -rf "$DATA_DIR/bad_data/orders/$1/$PERIOD"
 }
 
 cleanup "$CLIENT_CODE"

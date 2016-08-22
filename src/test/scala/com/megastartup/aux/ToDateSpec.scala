@@ -25,5 +25,27 @@ class ToDateSpec extends UnitSpec {
       Then("result is 2016-08-22")
       result shouldBe "2016-08-22"
     }
+
+  "String containing date" should "be checked" in {
+      Given("string '2016-05-12'")
+      val input = "2016-05-12"
+
+      When("checking that it's a date")
+      val result = ToDate.fromString(input)
+
+      Then("result is Some(2016-05-12)")
+      result shouldBe Some("2016-05-12")
+    }
+
+  "String containing invalid date" should "be marked as None" in {
+      Given("string '2016-05aaa-12'")
+      val input = "2016-05aaa-12"
+
+      When("checking that it's a date")
+      val result = ToDate.fromString(input)
+
+      Then("result is None")
+      result shouldBe None
+    }
 }
 
