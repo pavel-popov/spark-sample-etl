@@ -17,7 +17,11 @@ case class Orders(
   // somehow I can't make internal _.mkString thus implementing this custom method,
   // TODO: get rid of this
   def mkString(sep: String): String = {
-    s"%s$sep%d$sep%f".format(CustID, OrdersCnt, PaymentSum.getOrElse(0))
+    val paymentSum = PaymentSum match {
+      case Some(payment) => payment
+      case None          => 0
+    }
+    s"%s$sep%d$sep%.2f".format(CustID, OrdersCnt, paymentSum)
   }
 }
 
