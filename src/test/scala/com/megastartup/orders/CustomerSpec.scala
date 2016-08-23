@@ -3,7 +3,7 @@ package com.megastartup.orders
 import com.megastartup.spec._
 import org.scalatest._
 
-class CustomerSpec extends UnitSpec with SparkSpec {
+class CustomerSpec extends UnitSpec {
 
   "Customer" should "be presented as string" in {
     Given("sample Customer('Pikachu', '2016-08-11', 5)")
